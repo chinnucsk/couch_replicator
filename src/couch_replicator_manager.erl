@@ -99,9 +99,10 @@ replication_error(#rep{id = {BaseId, _} = RepId}, Error) ->
     nil ->
         ok;
     #rep_state{dbname = DbName, rep = #rep{doc_id = DocId}} ->
-        % TODO: maybe add error reason to replication document
+        {_, _, Reason} = chttpd:error_info(Error),
         update_rep_doc(DbName, DocId, [
             {<<"_replication_state">>, <<"error">>},
+            {<<"_replication_error">>, Reason},
             {<<"_replication_id">>, ?l2b(BaseId)}]),
         ok = gen_server:call(?MODULE, {rep_error, RepId, Error}, infinity)
     end.
